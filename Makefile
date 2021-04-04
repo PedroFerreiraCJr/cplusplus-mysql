@@ -1,11 +1,11 @@
 .PHONY: all clean execute
 
 # por padrao o target sera a execucao do arquivo compilado
-all: execute
+all: clean execute
 
 # caso o arquivo esteva com o timestamp mais antigo, sera apagado
 clean:
-	@rm ./bin/*
+	@rm -rf ./bin/
 	@echo "arquivos removidos"
 
 # local e arquivo que sera gerado na execucao da compilacao do arquivo do source code

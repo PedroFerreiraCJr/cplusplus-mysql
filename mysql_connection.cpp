@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 
 #include <mysql_driver.h>
 #include <mysql_connection.h>
@@ -12,40 +13,66 @@
 #include <cppconn/resultset.h>
 #include <cppconn/resultset_metadata.h>
 
-/*
-    g++ -std=c++14 -Wall -o mysql_connection mysql_connection.cpp -lpthread -lmysqlcppconn
-*/
+class Value {
+    public:
+        std::string name;
+        std::string value;
+};
 
-using namespace std;
+static Value *query(const std::string &, const std::string &);
 
 int main(int argc, const char *argv[]) {
-    try {
-        sql::Driver *driver {0};
-        sql::Connection *conn {0};
-        sql::Statement *stmt {0};
-        sql::ResultSet *rs {0};
+    std::string username {""};
+    std::string password {""};
 
-        driver = get_driver_instance();
-        conn = driver->connect("tcp://127.0.0.1:3306", "pedro", "pedro");
+    do {
+        std::cout << "Username: ";
+        std::getline(std::cin, username);
+
+        std::cout << "Password: ";
+        std::getline(std::cin, password);
+
+        if (!username.empty() && !password.empty()) {
+            break;
+        }
+
+        std::cout << "Informações incorretas." << std::endl;
+    } while (true);
+
+    std::cout << "Consultando..." << std::endl;
+    
+    Value *result = query(username, password);
+
+    std::cout << "Variável: " << result->name << ", Valor: " << result->value << std::endl;
+
+    return 0;
+}
+
+static Value *query(const std::string &username, const std::string &password) {
+    Value *result = new Value();
+    
+    try {
+        sql::Driver *driver = get_driver_instance();
+        sql::Connection *conn = driver->connect("tcp://127.0.0.1:3306", username, password);
 
         conn->setSchema("cplusplus");
 
-        stmt = conn->createStatement();
-        rs = stmt->executeQuery("show variables like 'version';");
-    
+        sql::Statement *stmt = conn->createStatement();
+        sql::ResultSet *rs = stmt->executeQuery("show variables like 'version';");
+            
         while (rs->next()) {
-            cout << rs->getString("variable_name") << endl;
-            cout << rs->getString("value") << endl;
+            result->name = rs->getString("variable_name");
+            result->value = rs->getString("value");
         }
 
         delete rs;
         delete stmt;
         delete conn;
     } catch (sql::SQLException &e) {
-        cout << e.what() << endl;
-        cout << e.getErrorCode() << endl;
-        cout << e.getSQLState() << endl;
+        std::cout << e.what() << std::endl;
+        std::cout << e.getErrorCode() << std::endl;
+        std::cout << e.getSQLState() << std::endl;
     }
 
-    return 0;
+    return result;
 }
