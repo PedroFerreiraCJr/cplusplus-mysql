@@ -11,6 +11,7 @@ clean:
 # local e arquivo que sera gerado na execucao da compilacao do arquivo do source code
 ./bin/mysql_connection: ./mysql_connection.cpp
 	@echo "compilando..."
+	@mkdir bin/
 	@g++ -std=c++14 -Wall -o ./bin/mysql_connection mysql_connection.cpp -lpthread -lmysqlcppconn
 
 # simplesmente executa o arquivo caso nao tenha havido modificacao no source code
