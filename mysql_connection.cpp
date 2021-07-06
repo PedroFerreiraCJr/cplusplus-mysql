@@ -40,17 +40,20 @@ int main(int argc, const char *argv[]) {
     } while (true);
 
     std::cout << "Consultando..." << std::endl;
-    
-    Value *result = query(username, password);
 
-    std::cout << "Variável: " << result->name << ", Valor: " << result->value << std::endl;
+    try {
+    	Value *result = query(username, password);
+        std::cout << "Variável: " << result->name << ", Valor: " << result->value << std::endl;
+    } catch(int &e) {
+	std::cout << "Houve uma falha na consulta ao banco de dados." << std::endl;
+    }
 
     return 0;
 }
 
 static Value *query(const std::string &username, const std::string &password) {
     Value *result = new Value();
-    
+
     try {
         sql::Driver *driver = get_driver_instance();
         sql::Connection *conn = driver->connect("tcp://127.0.0.1:3306", username, password);
@@ -59,7 +62,7 @@ static Value *query(const std::string &username, const std::string &password) {
 
         sql::Statement *stmt = conn->createStatement();
         sql::ResultSet *rs = stmt->executeQuery("show variables like 'version';");
-            
+
         while (rs->next()) {
             result->name = rs->getString("variable_name");
             result->value = rs->getString("value");
@@ -69,9 +72,10 @@ static Value *query(const std::string &username, const std::string &password) {
         delete stmt;
         delete conn;
     } catch (sql::SQLException &e) {
-        std::cout << e.what() << std::endl;
-        std::cout << e.getErrorCode() << std::endl;
-        std::cout << e.getSQLState() << std::endl;
+        std::cout << "what message: " << e.what() << std::endl;
+        std::cout << "sqlerrorcode: " << e.getErrorCode() << std::endl;
+        std::cout << "sqlstate:   : " << e.getSQLState() << std::endl;
+	throw 1;
     }
 
     return result;
